@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Newsletter() {
+function NewsLetter() {
     return (
         <div className="bg-[#02021C] py-24 px-6 border-t border-white/10">
             <div className="max-w-5xl mx-auto text-center">
@@ -58,4 +58,4 @@ function Newsletter() {
     );
 }
 
-export default Newsletter;
+export default NewsLetter;

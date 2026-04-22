@@ -8,7 +8,7 @@ import MoviesFilter from './components/MoviesFilter'
 import Movies from './components/Movies'
 import Pagination from './components/Pagination'
 import DetailPage from './components/DetailPage'
-import Newsletter from './components/Newsletter'
+import NewsLetter from './components/NewsLetter'
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -50,7 +50,7 @@ function Home({ currentPage, setCurrentPage, triggerSearch }) {
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
       />
-      <Newsletter />
+      <NewsLetter />
     </>
   )
 }
