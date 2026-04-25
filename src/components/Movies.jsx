@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from "react";
 import Card from "./Card";
-import { Link } from "react-router-dom";
 
 function Movies({ currentPage, searchVal, filters }) {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+
+  const getBestQuality = (torrents) => {
+    if (!torrents || torrents.length === 0) return 'N/A';
+    const qualityOrder = { '2160p': 4, '1080p': 3, '720p': 2, '480p': 1 };
+    const best = torrents.reduce((best, current) => 
+      (qualityOrder[current.quality] > qualityOrder[best.quality] ? current : best)
+    );
+    return best.quality;
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -16,19 +25,18 @@ function Movies({ currentPage, searchVal, filters }) {
       setError(null);
 
       try {
-
         const { quality, genre, rating, limit, sort_by } = filters;
 
         let url = `https://movies-api.accel.li/api/v2/list_movies.json?page=${currentPage}`;
 
-     
         if (searchVal) url += `&query_term=${encodeURIComponent(searchVal.trim())}`;
-        if (quality)   url += `&quality=${quality}`;
-        if (genre)     url += `&genre=${genre}`;
-        if (rating)    url += `&minimum_rating=${rating}`;
-        if (limit)     url += `&limit=${limit}`;
-        if (sort_by)   url += `&sort_by=${sort_by}`;
+        if (quality && quality !== "All" && quality !== "") url += `&quality=${quality}`;
+        if (genre && genre !== "All" && genre !== "") url += `&genre=${genre}`;
+        if (rating && rating !== "All" && rating !== "") url += `&minimum_rating=${rating}`;
+        if (limit && limit !== "All" && limit !== "") url += `&limit=${limit}`;
+        if (sort_by && sort_by !== "All" && sort_by !== "") url += `&sort_by=${sort_by}`;
 
+        console.log("Fetching URL:", url); // Debug
 
         const response = await fetch(url, { signal });
 
@@ -39,7 +47,7 @@ function Movies({ currentPage, searchVal, filters }) {
         if (data.status === "ok" && data.data.movies) {
           setMovies(data.data.movies);
         } else {
-          setMovies([]); 
+          setMovies([]);
         }
       } catch (err) {
         if (err.name !== "AbortError") {
@@ -56,7 +64,6 @@ function Movies({ currentPage, searchVal, filters }) {
     return () => controller.abort();
   }, [currentPage, searchVal, filters]);
 
-
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center h-[60vh] bg-[#02021C]">
@@ -70,7 +77,6 @@ function Movies({ currentPage, searchVal, filters }) {
       </div>
     );
   }
-
 
   if (error) {
     return (
@@ -94,21 +100,17 @@ function Movies({ currentPage, searchVal, filters }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
         {movies.length > 0 ? (
-          
           movies.map((movie) => (
-            <Link key={movie.id} to={`/detail/${movie.id}`} className="hover:scale-105 transition-all duration-300">
-              <Card
-                image={movie.large_cover_image}
-                title={movie.title}
-                rating={movie.rating}
-                year={movie.year}
-           
-                genres={movie.genres ? movie.genres[0] : "N/A"}
-                quality={movie.torrents[0].quality || 'N/A'}
-
-
-              />
-            </Link>
+            <Card
+              key={movie.id}
+              id={movie.id}
+              image={movie.large_cover_image}
+              title={movie.title}
+              rating={movie.rating}
+              year={movie.year}
+              genres={movie.genres ? movie.genres[0] : "N/A"}
+              quality={getBestQuality(movie.torrents)}
+            />
           ))
         ) : (
           <div className="col-span-full text-center py-32 border-2 border-dashed border-white/5 rounded-[3rem]">

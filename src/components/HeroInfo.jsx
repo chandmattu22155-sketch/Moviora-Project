@@ -78,7 +78,7 @@ function HeroInfo() {
                     <div className="absolute -inset-4 bg-[#FFB800]/20 blur-[60px] rounded-full opacity-50"></div>
 
         
-                    <div className="relative rounded-[2.5rem] p-px bg-linear-to-br from-[#FFB800] via-[#FDE047] to-[#B45309] shadow-[0_0_25px_rgba(255,184,0,0.4)] overflow-hidden max-w-[320px] md:max-w-95 mx-auto transition-transform duration-1000 cursor-pointer hover:scale-90">
+                    <div className="relative rounded-[2.5rem] p-px bg-linear-to-br from-[#FFB800] via-[#FDE047] to-[#B45309] shadow-[0_0_25px_rgba(255,184,0,0.4)] overflow-hidden max-w-[320px] md:max-w-95 mx-auto transition-transform duration-1000 cursor-pointer ">
                         
                         <div className="relative rounded-[2.4rem] overflow-hidden bg-[#050528]">
                             <Swiper
@@ -171,5 +171,4 @@ function HeroInfo() {
 }
 
 export default HeroInfo;
-
 

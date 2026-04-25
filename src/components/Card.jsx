@@ -1,16 +1,21 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-
-function Card({ title, image, rating, year, id, movie, genres, quality }) {
+function Card({ title, image, rating, year, id, genres, quality }) {
   const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    if (id) {
+      navigate(`/detail/${id}`);
+    }
+  };
 
   const handleImageError = (e) => {
     e.target.src = `https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png?text=${title}`;
   };
 
   return (
-    <div>
+    <div onClick={handleCardClick} className="cursor-pointer">
       <div
         className="relative h-110 rounded-3xl overflow-hidden cursor-pointer group 
         border-2 border-transparent 
@@ -18,38 +23,34 @@ function Card({ title, image, rating, year, id, movie, genres, quality }) {
         hover:shadow-[0_0_40px_rgba(255,184,0,0.6),0_0_80px_rgba(255,184,0,0.2),inset_0_0_20px_rgba(255,184,0,0.3)] 
         transition-all duration-500 ease-out"
       >
-
+    
         <div
           className="absolute top-3 right-3 z-40 
-  flex items-center gap-1 px-2 py-1 rounded-xl
-  bg-black/60 backdrop-blur-md border border-[#FFB800]/40
-  shadow-[0_0_10px_rgba(255,184,0,0.6)]
-
-  opacity-0 scale-75  
-  group-hover:opacity-100 group-hover:scale-100
-
-  transition-all duration-300 ease-out"
+          flex items-center gap-1 px-2 py-1 rounded-xl
+          bg-black/60 backdrop-blur-md border border-[#FFB800]/40
+          shadow-[0_0_10px_rgba(255,184,0,0.6)]
+          opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100
+          transition-all duration-300 ease-out"
         >
           <span className="text-[#FFB800] text-sm">★</span>
-          <span className="text-white font-bold text-sm">{rating}</span>
+          <span className="text-white font-bold text-sm">{rating || "N/A"}</span>
         </div>
 
-
         <img
-          src={
-            image ||
-            "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=500&auto=format&fit=crop"
-          }
+          src={image || "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=500&auto=format&fit=crop"}
           alt={title}
           onError={handleImageError}
           className="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-in-out"
         />
 
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-        <div className="absolute inset-0 bg-linear-to-t from-black/95 via-black/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
-
+     
         <button
-          onClick={() => navigate(`/detail/${id}`)}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCardClick();
+          }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 
           px-5 py-2 rounded-2xl font-bold text-[12px] tracking-wide uppercase
           bg-slate-600/10 backdrop-blur-lg text-white border border-blue-400/30
@@ -77,7 +78,7 @@ function Card({ title, image, rating, year, id, movie, genres, quality }) {
           </span>
         </button>
 
-
+      
         <div className="absolute bottom-0 left-0 p-6 w-full translate-y-8 group-hover:translate-y-0 transition-transform duration-500 ease-out">
           <h1 className="text-xl font-extrabold text-white leading-tight mb-1 drop-shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
             {title}
@@ -87,11 +88,9 @@ function Card({ title, image, rating, year, id, movie, genres, quality }) {
             <span className="text-gray-200 font-medium text-sm">
               {year}
             </span>
-
             <span className="text-[#FFB800] border-l border-gray-600 pl-3 text-sm font-medium">
               {genres}
             </span>
-
             <span className="text-gray-400 border-l border-gray-600 pl-3 text-sm font-medium">
               {quality}
             </span>
