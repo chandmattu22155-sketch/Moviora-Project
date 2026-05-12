@@ -1,78 +1,39 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Card from "./Card";
+import { useSelector } from "react-redux";
+import { useQuery } from "@tanstack/react-query";
+import { fetchMovies } from "../services/movieApi";
 
-function Movies({ currentPage, searchVal, filters }) {
-  const [movies, setMovies] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+function Movies() {
+  const { search, currentPage, filters } = useSelector(
+    (state) => state.movie
+  );
 
+  const { data: movies = [], isLoading, error } = useQuery({
+    queryKey: ["movies", { page: currentPage, search, filters }],
+    queryFn: fetchMovies,
+    keepPreviousData: true,
+  });
 
   const getBestQuality = (torrents) => {
-    if (!torrents || torrents.length === 0) return 'N/A';
-    const qualityOrder = { '2160p': 4, '1080p': 3, '720p': 2, '480p': 1 };
-    const best = torrents.reduce((best, current) => 
-      (qualityOrder[current.quality] > qualityOrder[best.quality] ? current : best)
-    );
-    return best.quality;
+    if (!torrents || torrents.length === 0) return "N/A";
+
+    const order = { "2160p": 4, "1080p": 3, "720p": 2, "480p": 1 };
+
+    return torrents.reduce((best, cur) =>
+      order[cur.quality] > order[best.quality] ? cur : best
+    ).quality;
   };
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    const fetchMovies = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const { quality, genre, rating, limit, sort_by } = filters;
-
-        let url = `https://movies-api.accel.li/api/v2/list_movies.json?page=${currentPage}`;
-
-        if (searchVal) url += `&query_term=${encodeURIComponent(searchVal.trim())}`;
-        if (quality && quality !== "All" && quality !== "") url += `&quality=${quality}`;
-        if (genre && genre !== "All" && genre !== "") url += `&genre=${genre}`;
-        if (rating && rating !== "All" && rating !== "") url += `&minimum_rating=${rating}`;
-        if (limit && limit !== "All" && limit !== "") url += `&limit=${limit}`;
-        if (sort_by && sort_by !== "All" && sort_by !== "") url += `&sort_by=${sort_by}`;
-
-        console.log("Fetching URL:", url); // Debug
-
-        const response = await fetch(url, { signal });
-
-        if (!response.ok) throw new Error("Network response was not ok");
-
-        const data = await response.json();
-
-        if (data.status === "ok" && data.data.movies) {
-          setMovies(data.data.movies);
-        } else {
-          setMovies([]);
-        }
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          console.error("Fetch error:", err);
-          setError("Something went wrong. Please try again.");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMovies();
-
-    return () => controller.abort();
-  }, [currentPage, searchVal, filters]);
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex flex-col justify-center items-center h-[60vh] bg-[#02021C]">
+      <div className="flex flex-col justify-center items-center h-[60vh] bg-linear-to-br from-purple-900 via-blue-900 to-black">
         <div className="relative">
-          <div className="w-16 h-16 border-4 border-white/10 rounded-full"></div>
-          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-[#FFB800] border-transparent rounded-full animate-spin"></div>
+          <div className="w-20 h-20 border-4 border-white/10 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-20 h-20 border-4 border-t-[#FFB800] border-r-[#FF6B00] border-transparent rounded-full animate-spin"></div>
         </div>
-        <p className="text-[#FFB800] mt-4 font-bold tracking-widest animate-pulse uppercase">
-          Scanning Database...
+        <p className="text-transparent bg-clip-text bg-linear-to-r from-[#FFB800] to-[#FF6B00] mt-6 font-bold tracking-widest animate-pulse uppercase text-lg">
+          Loading Amazing Movies...
         </p>
       </div>
     );
@@ -80,25 +41,39 @@ function Movies({ currentPage, searchVal, filters }) {
 
   if (error) {
     return (
-      <div className="text-center py-20 bg-[#02021C]">
-        <p className="text-red-500 font-bold">{error}</p>
+      <div className="text-center py-20 bg-linear-to-br from-purple-900 via-blue-900 to-black">
+        <div className="max-w-md mx-auto bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-red-500/30">
+          <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-red-400 font-bold text-lg">
+            {error.message || "Something went wrong"}
+          </p>
+          <p className="text-white/60 text-sm mt-2">Please try again later</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 md:p-16 bg-[#02021C] min-h-screen">
-      <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-12 uppercase 
-                     bg-[#FFB800] bg-clip-text text-transparent
-                     drop-shadow-[0_0_20px_rgba(255,184,0,0.2)]">
-        {searchVal ? (
-          <>Search Result: <span className="text-white">{searchVal}</span></>
-        ) : (
-          <>Latest <span className="text-white">Movies</span></>
-        )}
-      </h1>
+    <div className="p-8 md:p-14 bg-linear-to-br from-purple-900 via-blue-900 to-black min-h-screen">
+      <div className="mb-12 text-center md:text-left">
+        <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase 
+                       bg-linear-to-r from-[#FFB800] via-[#FF8C00] to-[#FF6B00] bg-clip-text text-transparent">
+          {search ? (
+            <>
+              Search Results: <span className="text-white">{search}</span>
+            </>
+          ) : (
+            <>
+              Latest <span className="text-white">Movies</span>
+            </>
+          )}
+        </h1>
+        <div className="w-24 h-1 bg-linear-to-r from-[#FFB800] to-[#FF6B00] rounded-full mt-4 mx-auto md:mx-0"></div>
+      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
         {movies.length > 0 ? (
           movies.map((movie) => (
             <Card
@@ -108,21 +83,33 @@ function Movies({ currentPage, searchVal, filters }) {
               title={movie.title}
               rating={movie.rating}
               year={movie.year}
-              genres={movie.genres ? movie.genres[0] : "N/A"}
+              genres={movie.genres?.[0] || "N/A"}
               quality={getBestQuality(movie.torrents)}
             />
           ))
         ) : (
-          <div className="col-span-full text-center py-32 border-2 border-dashed border-white/5 rounded-[3rem]">
-            <h2 className="text-3xl font-bold text-white mb-2 uppercase">
-              No Masterpieces Found!
+          <div className="col-span-full text-center py-32 border-2 border-dashed border-white/10 rounded-[3rem] bg-white/5 backdrop-blur-sm">
+            <svg className="w-24 h-24 text-white/30 mx-auto mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+            </svg>
+            <h2 className="text-3xl font-bold text-white mb-3 uppercase tracking-wide">
+              No Movies Found!
             </h2>
-            <p className="text-gray-400 text-lg">
-              Try a different title or clear your filters.
+            <p className="text-gray-300 text-lg max-w-md mx-auto">
+              Try adjusting your search or clear the filters to see more results.
             </p>
           </div>
         )}
       </div>
+      
+     
+      {movies.length > 0 && (
+        <div className="mt-12 text-center">
+          <p className="text-white/60 text-sm">
+            Showing <span className="text-[#FFB800] font-bold">{movies.length}</span> amazing movies
+          </p>
+        </div>
+      )}
     </div>
   );
 }
